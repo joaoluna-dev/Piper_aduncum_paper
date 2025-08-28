@@ -34,11 +34,10 @@ title_map <- c(
 # --- Step 3: Load and Prepare Data ---
 
 # Use lapply to read all CSV files into a list of data frames.
-# This is more efficient than writing a separate read.csv() for each file.
 data_list <- lapply(file_names, function(f) read.csv(f, sep = "\t"))
 
 # Assign names to the list elements based on the file names (without the .csv extension).
-# This allows us to easily loop through them by name.
+# This allow to easily loop through them by name.
 names(data_list) <- tools::file_path_sans_ext(file_names)
 
 # --- Step 4: Loop Through Each Dataset to Generate and Save a Plot ---
@@ -52,9 +51,9 @@ for (name in names(data_list)) {
   # --- Data Processing and Filtering ---
   
   # 1. Clean the 'Term' names for better readability on the plot.
-  # This new, more robust regular expression finds everything from the start of the string (.*)
+  # This regular expression finds everything from the start of the string (.*)
   # up to the last tilde (~) or colon (:), including any whitespace (\\s*), and replaces it with nothing.
-  # This correctly handles all term formats (GO and KEGG).
+  # Correctly handles all term formats (GO and KEGG).
   element <- element %>%
     mutate(Term = str_replace(Term, ".*[~:]\\s*", ""))
   
@@ -150,3 +149,4 @@ for (name in names(data_list)) {
   print(paste("PNG plot saved as:", output_filename_png))
   print(paste("TIFF plot saver as:", output_filename_tiff))
 }
+
