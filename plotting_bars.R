@@ -1,10 +1,9 @@
-# --- Step 1: Load Required Libraries ---
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(stringr)
 
-# --- Step 2: Define Input Files and Plot Titles ---
+# --- Input Files and Plot Titles ---
 
 # Create a vector containing the names of all input data files.
 file_names <- c(
@@ -19,7 +18,6 @@ file_names <- c(
 ) 
 
 # Create a named vector to map file names to descriptive titles for each plot.
-# This makes the plots easier to understand. "Liver" has been replaced with "Hepatic".
 title_map <- c(
   "kidney_CC_analysis" = "Cellular Component Analysis - Kidney",
   "kidney_BP_analysis" = "Biological Process Analysis - Kidney",
@@ -31,16 +29,15 @@ title_map <- c(
   "hepatic_KEGG_pathways" = "KEGG Pathway Analysis - Hepatic"
 )
 
-# --- Step 3: Load and Prepare Data ---
+# --- Load and Prepare Data ---
 
 # Use lapply to read all CSV files into a list of data frames.
 data_list <- lapply(file_names, function(f) read.csv(f, sep = "\t"))
 
 # Assign names to the list elements based on the file names (without the .csv extension).
-# This allow to easily loop through them by name.
 names(data_list) <- tools::file_path_sans_ext(file_names)
 
-# --- Step 4: Loop Through Each Dataset to Generate and Save a Plot ---
+# --- Loop Through Each Dataset to Generate and Save a Plot ---
 
 # Start a 'for' loop that will iterate through each data frame in 'data_list'.
 for (name in names(data_list)) {
@@ -50,19 +47,19 @@ for (name in names(data_list)) {
   
   # --- Data Processing and Filtering ---
   
-  # 1. Clean the 'Term' names for better readability on the plot.
+  # Clean the 'Term' names for better readability.
   # This regular expression finds everything from the start of the string (.*)
   # up to the last tilde (~) or colon (:), including any whitespace (\\s*), and replaces it with nothing.
   # Correctly handles all term formats (GO and KEGG).
   element <- element %>%
     mutate(Term = str_replace(Term, ".*[~:]\\s*", ""))
   
-  # 2. Process the data for plotting:
-  #    - Arrange the data by PValue in ascending order to find the most significant terms.
+  # Process the data for plotting:
+  #    - Arrange the data by p-value in ascending order to find the most significant terms.
   #    - Slice the top 20 most significant terms.
-  #    - Create an ordered factor for 'Term'. This is CRUCIAL to ensure ggplot2
+  #    - Create an ordered factor for 'Term'. This ensure ggplot2
   #      plots the bars in the correct order (most significant at the top).
-  #      'rev()' reverses the order so the smallest P-value appears at the top of the y-axis.
+  #    - 'rev()' reverses the order so the smallest P-value appears at the top of the y-axis.
   element_plot <- element %>% 
     arrange(PValue) %>%
     slice(1:20) %>%
@@ -70,14 +67,14 @@ for (name in names(data_list)) {
   
   # --- Plot Generation with ggplot2 ---
   
-  # 3. Create the plot object.
+  # Create the plot object.
   p <- ggplot(data = element_plot, aes(x = Term, y = Count, fill = PValue)) +
     
     # Add bars. 'stat = "identity"' means the bar height is taken directly from the 'Count' column.
     # 'color' and 'linewidth' add a thin black border to the bars.
     geom_bar(stat = "identity", color = "black", linewidth = 0.3) +
     
-    # 4. ESSENTIAL: Flip the coordinates to make the bar plot horizontal.
+    # Flip the coordinates to make the bar plot horizontal.
     coord_flip() +
     
     # Add text labels for the P-values on each bar.
@@ -119,7 +116,7 @@ for (name in names(data_list)) {
       legend.position = "right"
     )
   
-  # --- Step 5: Save the Plot ---
+  # --- Save the Plot ---
   
   # Define the output filename based on the input data name.
   output_filename_png <- paste0(name, "_barplot.png")
@@ -149,4 +146,5 @@ for (name in names(data_list)) {
   print(paste("PNG plot saved as:", output_filename_png))
   print(paste("TIFF plot saver as:", output_filename_tiff))
 }
+
 
